@@ -14,6 +14,7 @@ from hat.aio import run_asyncio
 from protocols.util.server import Server
 from protocols.util.message import Message
 
+
 class WSServer(Server):
 
     def __init__(self, domain_name="127.0.0.1", port=8765):

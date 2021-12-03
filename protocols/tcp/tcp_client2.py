@@ -79,7 +79,9 @@ class TCPClient(Client):
         # self.register_message(self.sel, request)
 
         try:
-            self.tcp.read()
+            t = self.tcp.read()
+
+            print("t", t)
             # print("events start ")
             # events = self.sel.select(timeout=1)
             # # selectors don't work outside loop
@@ -102,19 +104,22 @@ class TCPClient(Client):
             # if not self.sel.get_map():
             #     return
 
+
         except KeyboardInterrupt:
             print("caught keyboard interrupt, exiting")
         finally:
             self.sel.close()
 
-#
-# def main():
-#     tcp_client = TCPClient("127.0.0.1", 4567)
-#     tcp_client.send("tmp 1234567890")
-#     tcp_client.send("aaaaa bbbb ccc dd e")
-#
-#     # print(tcp_client.receive())
-#
-#
-# if __name__ == '__main__':
-#     main()
+
+def main():
+    tcp_client = TCPClient("127.0.0.1", 4567)
+    tcp_client.start_connection()
+    tcp_client.send("tmp 1234567890")
+    tcp_client.send("aaaaa bbbb ccc dd e")
+    tcp_client.driver()
+    # print(tcp_client.receive())
+
+
+
+if __name__ == '__main__':
+    main()

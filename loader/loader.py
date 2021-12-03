@@ -15,7 +15,7 @@ from adapter import Adapter
 # from protocols.client import Client
 # import websockets
 
-from protocols.yaml_parser import get_config
+from protocols.util.yaml_parser import get_config
 
 """
 utils for address translations
