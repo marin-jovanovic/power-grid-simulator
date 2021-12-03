@@ -52,3 +52,6 @@ yarg==0.1.9
 yarl==1.6.3
 zope.event==4.5.0
 zope.interface==5.4.0
+
+setuptools~=57.0.0
+pyaml~=21.10.1

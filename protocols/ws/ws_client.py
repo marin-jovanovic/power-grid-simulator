@@ -41,11 +41,11 @@ class WSClient(Client, ABC):
 async def async_main():
     client = WSClient()
 
-    message = Message(header="header", payload="msg")
+    message = Message("header", "msg")
 
     await client.send(message.byte_representation())
     value = await client.receive()
-    print("received", value, type(value))
+    print(value, type(value))
     # print(await client.receive())
 
     await client.send("1")

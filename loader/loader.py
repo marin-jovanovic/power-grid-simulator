@@ -10,14 +10,12 @@ from hat.aio import run_asyncio
 import signal
 from adapter import Adapter
 
-from ws.ws_client import WSClient
-
 # from protocols.server import Server
 # from protocols.ws_server import WSServer
 # from protocols.client import Client
 # import websockets
 
-from yaml_parser import get_config
+from protocols.yaml_parser import get_config
 
 """
 utils for address translations
