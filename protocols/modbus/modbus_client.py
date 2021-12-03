@@ -20,7 +20,8 @@ class ModbusClient(Client):
     async def _client_wrapper(self, payload):
         client = await mod.create_tcp_master(
             mod.ModbusType.TCP,
-            hat.drivers.tcp.Address(self.domain_name, self.port))
+            hat.drivers.tcp.Address(self.domain_name, self.port)
+        )
 
         await payload(client)
 
@@ -122,15 +123,15 @@ class ModbusClient(Client):
         payload_hex = payload_hex[:self.fragment_len].lstrip("0") + payload_hex[
                                                                     self.fragment_len:]
 
-        try:
-            return bytes.fromhex(payload_hex).decode('utf-8')
+        # try:
+        return bytes.fromhex(payload_hex).decode('utf-8')
 
-        except ValueError:
-            print("err on", payload)
-            print("err", payload_hex)
-
-            return ''.join(
-                [chr(int(''.join(c), 16)) for c in zip(a[0::2], a[1::2])])
+        # except ValueError:
+        #     print("err on", payload)
+        #     print("err", payload_hex)
+        #
+        #     return ''.join(
+        #         [chr(int(''.join(c), 16)) for c in zip(a[0::2], a[1::2])])
 
             # raise ValueError("err")
 

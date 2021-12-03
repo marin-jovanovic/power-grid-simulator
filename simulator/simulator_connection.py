@@ -1,12 +1,9 @@
 # todo remove later, sim shouldn't connect to client directly
-from abc import ABC, abstractmethod
 import datetime
 import typing
-import random
+from abc import ABC, abstractmethod
 
 from hat.drivers import iec104
-import pandapower.networks
-
 
 
 class ConnType(ABC):
@@ -69,4 +66,3 @@ class ConnectionOther(ConnType):
 
     def wrap_value(self, value, type_104):
         raise NotImplementedError
-

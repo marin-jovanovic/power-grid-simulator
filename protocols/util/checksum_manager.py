@@ -64,7 +64,7 @@ def get_wrapped_payload(pl: list) -> list:
 
 def check_payload(c_pl: list) -> bool:
     """
-    check if payload is corrupted
+    check if pamarincasiyload is corrupted
 
     :param c_pl: payload
     :return: is corrupted

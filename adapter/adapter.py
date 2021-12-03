@@ -26,6 +26,8 @@ class Adapter:
         False:
             get_curr_data works
 
+    todo what is state and what is data
+
     """
 
     def __init__(
@@ -33,8 +35,6 @@ class Adapter:
         state_or_data=True,
         notify_small=False,
     ):
-
-        # super().__init__(host_name, port)
 
         # todo add option to change, not sure if needed
 
@@ -45,28 +45,31 @@ class Adapter:
 
         self.source_client = None
 
-    async def get(self, protocol_type, domain_name, port):
-        # todo check if need close for protocol type in if statement
+        print("adapter created")
 
-        if not self.source_client or self.source_client != protocol_type(domain_name, port):
-            self.source_client = protocol_type(domain_name, port)
+    # async def get(self, protocol_type, domain_name, port):
+    #     # todo check if need close for protocol type in if statement
+    #
+    #     if not self.source_client or \
+    #             self.source_client != protocol_type(domain_name, port):
+    #         self.source_client = protocol_type(domain_name, port)
+    #
+    #     # todo remove this line, used for testing
+    #     await self.source_client.send("5")
+    #
+    #     data = await self.source_client.receive()
+    #
+    #     print("received", data)
+    #
+    #     # todo get actual data
+    #     return "dummy data"
 
-        # todo remove this line, used for testing
-        await self.source_client.send("5")
+    # async def notify_wait_for_confirmation(self, payload):
+    #     # todo use web socket or something like that
+    #     raise NotImplementedError
 
-        data = await self.source_client.receive()
-
-        print("received", data)
-
-        # todo get actual data
-        return "dummy data"
-
-    async def notify_wait_for_confirmation(self, payload):
-        # todo use web socket or something like that
-        raise NotImplementedError
-
-    async def send(self, protocol_type, domain_name, port, payload):
-        print("sending")
+    # async def send(self, protocol_type, domain_name, port, payload):
+    #     print("sending")
 
     async def forward(
         self,
@@ -142,18 +145,18 @@ class Adapter:
 
         return self.data
 
-    async def tcp_get_curr_data(self):
-        # todo remove it and implement it in existing functions
-        try:
-            # return self.client.buffer.read_next()
-            return self.receive()
-        except IndexError:
-            self.close()
-
-    async def tcp_send_data(self, value, asdu=0, io=0,
-                            data_type=MessageType.CONTENT):
-        # todo remove it and implement it in existing functions
-        self.send(value, data_type)
+    # async def tcp_get_curr_data(self):
+    #     # todo remove it and implement it in existing functions
+    #     try:
+    #         # return self.client.buffer.read_next()
+    #         return self.receive()
+    #     except IndexError:
+    #         self.close()
+    #
+    # async def tcp_send_data(self, value, asdu=0, io=0,
+    #                         data_type=MessageType.CONTENT):
+    #     # todo remove it and implement it in existing functions
+    #     self.send(value, data_type)
 
     async def get_init_data(self):
         """

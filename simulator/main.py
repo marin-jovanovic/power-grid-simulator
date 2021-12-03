@@ -1,17 +1,25 @@
-from pathlib import Path
-import click
 import sys
+from pathlib import Path
+
+import click
 from hat import aio
 from hat import json
-from simulator_connection import ConnectionIEC104
+
 from simulator import run_sim
+from simulator_connection import ConnectionIEC104
+
 default_conf_path = 'conf.yaml'
 
 
 def notify(output):
+    pass
     print("NOTIFY  ", len(output))
+
+
 def new_value(output):
-    print(output, end="")
+    pass
+    print(output)
+
 
 @click.command()
 @click.option('--conf-path', type=Path, default=default_conf_path)

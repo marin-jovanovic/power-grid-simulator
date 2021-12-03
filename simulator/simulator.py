@@ -1,11 +1,12 @@
-import time
 import asyncio
-import random
-import pandapower.networks
 import logging
+import random
+import time
+
+import pandapower.networks
 from hat import aio
-from hat.drivers import iec104
 from hat import json
+from hat.drivers import iec104
 
 mlog = logging.getLogger('simulator')
 
@@ -27,13 +28,12 @@ class PandaPowerExample:
         """
         return getattr(self.net, table)[column][index]
 
-    def get_value(self, tab  le, column, index):
+    def get_value(self, table, column, index):
         return getattr(self.net, table)[column][index]
 
     def set_net_value_random(self, table, column, ref_value):
         getattr(self.net, table)[column] = max(
             random.uniform(ref_value * 0.75, ref_value * 1.25), 0)
-
 
 
 class Simulator(aio.Resource):

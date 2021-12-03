@@ -11,7 +11,7 @@ from protocols.ws.ws_client import WSClient
 async def async_main():
     client = WSClient()
 
-    print(client.receive())
+    print(await client.receive())
 
     client.connection.close()
 
