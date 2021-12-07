@@ -14,9 +14,10 @@ class EchoServerProtocol(asyncio.Protocol):
         print('Send: {!r}'.format(message))
         self.transport.write(data + str("tmp").encode("utf-8"))
 
-        print('Close the client socket')
+        print("sent")
+        # print('Close the client socket')
         # self.transport.close()
-
+        print()
 
 async def main():
     # Get a reference to the event loop as we plan to use
