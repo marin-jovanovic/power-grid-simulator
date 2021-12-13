@@ -30,27 +30,6 @@ class Message:
     def decode(self, payload):
         raise NotImplementedError
 
-        # if sw == "upload":
-        #
-        #     sw = raw_data[1]
-        #
-        #     if sw == "get_curr_state":
-        #         print("get curr state")
-        #
-        #     elif sw == "get_init_data":
-        #         print("get init data")
-        #
-        #     elif sw == "get_curr_data":
-        #         print("get curr data")
-        #
-        #     elif sw == "update_data":
-        #         print("update data")
-        #
-        # elif sw == "download":
-        #     pass
-        #
-        # else:
-        #     raise NotImplementedError
 
 def main():
     message = Message(
@@ -59,15 +38,6 @@ def main():
     )
 
     print(message)
-
-    # s = "abcdef"
-    # a = s.encode("utf-8")
-    # print(a, type(a))
-
-    # ascii_repr = [ord(c) for c in s]
-    # print(ascii_repr)
-    # binary_repr = [bin(i)[2:] for i in ascii_repr]
-    # print(binary_repr)
 
 
 if __name__ == '__main__':
