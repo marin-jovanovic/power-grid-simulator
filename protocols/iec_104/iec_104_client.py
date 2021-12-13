@@ -77,24 +77,6 @@ class IEC104Client(Client):
 
         self.known_states = {}
 
-    # todo extract to upper
-    def update_states(self, new_states):
-        """"""
-
-        diff = {}
-
-        for i in new_states:
-
-            if (k := (i.asdu_address, i.io_address)) not in self.known_states\
-                    or self.known_states[k] != i:
-                diff[k] = i
-                self.known_states[k] = i
-
-
-        print("diff")
-        for k,v in diff.items():
-            print(k,v.value.value)
-
 
     async def send(self, payload):
         """"""
@@ -112,10 +94,7 @@ class IEC104Client(Client):
 
         self.update_states(states)
 
-
         return states
-
-        # raw_data = await connection.interrogate(asdu_address=65535)
 
     async def diff(self):
         """"""
