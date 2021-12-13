@@ -2,6 +2,7 @@
 utils for address translations
 """
 import asyncio
+import time
 
 from hat.aio import run_asyncio
 from hat.drivers import iec104
@@ -71,6 +72,29 @@ class IEC104Client(Client):
     #     async def close(self):
     #         raise NotImplementedError
 
+    def __init__(self, domain_name="127.0.0.1", port=5000):
+        super(IEC104Client, self).__init__(domain_name, port)
+
+        self.known_states = {}
+
+    # todo extract to upper
+    def update_states(self, new_states):
+        """"""
+
+        diff = {}
+
+        for i in new_states:
+
+            if (k := (i.asdu_address, i.io_address)) not in self.known_states\
+                    or self.known_states[k] != i:
+                diff[k] = i
+                self.known_states[k] = i
+
+
+        print("diff")
+        for k,v in diff.items():
+            print(k,v.value.value)
+
 
     async def send(self, payload):
         """"""
@@ -81,7 +105,19 @@ class IEC104Client(Client):
     async def receive_single(self):
         """"""
 
-    async def receive_all(self):
+    async def receive_all(self, asdu_address):
+        """"""
+
+        states = await self.connection.interrogate(asdu_address)
+
+        self.update_states(states)
+
+
+        return states
+
+        # raw_data = await connection.interrogate(asdu_address=65535)
+
+    async def diff(self):
         """"""
 
     async def connect(self):
@@ -95,7 +131,7 @@ async def iec_104_init_wrapper(domain_name="127.0.0.1", port=19999):
     client = IEC104Client(domain_name, port)
 
     client.address = iec104.Address(domain_name, port)
-    client.connection = await iec104.connect(address)
+    client.connection = await iec104.connect(client.address)
 
     return client
 
@@ -116,25 +152,33 @@ async def connect():
                 await asyncio.sleep(1)
             print("reconnecting\n")
 
-async def interrogate():
-    """"""
-
 
 async def async_main():
 
-    await asyncio.sleep(5)
-    print("start")
-    address = iec104.Address('127.0.0.1', 19999)
-    connection = await iec104.connect(address)
-    raw_data = await connection.interrogate(asdu_address=65535)
+    client = await iec_104_init_wrapper("127.0.0.1", 19999)
+    raw_data = await client.receive_all(asdu_address=65535)
+    # print()
+    # print()
+    # print()
+    time.sleep(3)
+    raw_data = await client.receive_all(asdu_address=65535)
+    time.sleep(3)
+    raw_data = await client.receive_all(asdu_address=65535)
+    time.sleep(3)
+    raw_data = await client.receive_all(asdu_address=65535)
+
+    return
+
     [print(i) for i in raw_data]
     print()
     print()
     print()
-    raw_data = await connection.interrogate(asdu_address=65535)
+    raw_data = await client.receive_all(asdu_address=65535)
+    # raw_data = await connection.interrogate(asdu_address=65535)
     [print(i) for i in raw_data]
 
     return
+
 
     # address = iec104.Address('127.0.0.1', 19999)
     # while True:
