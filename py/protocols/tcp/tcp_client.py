@@ -1,17 +1,16 @@
 import asyncio
 
-from util.client import Client
+from py.protocols.util.client import Client
 
-class EchoClientProtocol(asyncio.Protocol, Client):
+
+class EchoClientProtocol(asyncio.Protocol):
+
     def __init__(self,  on_con_lost):
         self.on_con_lost = on_con_lost
+        self.rec_l = []
 
     def connection_made(self, transport):
         self.transport = transport
-
-    def send_msg(self, data):
-        self.transport.write(data.encode())
-        print('Data sent: {!r}'.format(data))
 
     def data_received(self, data):
 
@@ -21,31 +20,78 @@ class EchoClientProtocol(asyncio.Protocol, Client):
 
         print("parts received", parts)
 
+        for message in parts:
+            self.rec_l.append(message)
+
     def connection_lost(self, exc):
         print('The server closed the connection')
         self.on_con_lost.set_result(True)
 
 
+class TCPClient(Client):
+
+    def __init__(self, domain_name="127.0.0.1", port=8888):
+        super(TCPClient, self).__init__(domain_name, port)
+
+        self.loop = asyncio.get_running_loop()
+
+        self.on_con_lost = self.loop.create_future()
+        self.protocol = EchoClientProtocol(self.on_con_lost)
+
+    async def send(self, payload):
+        self.transport.write(payload.encode())
+        print('Data sent: {!r}'.format(payload))
+
+    async def receive(self):
+        return self.protocol.rec_l
+        # raise NotImplementedError
+
+    async def close(self):
+        try:
+            await self.on_con_lost
+        finally:
+            self.transport.close()
+
+
+async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
+
+    client = TCPClient(domain_name, port)
+
+    client.transport, _ = await client.loop.create_connection(
+        lambda: client.protocol,
+        domain_name,
+        port
+    )
+
+    return client
+
+
 async def main():
-    loop = asyncio.get_running_loop()
 
-    on_con_lost = loop.create_future()
-    p = EchoClientProtocol(on_con_lost)
+    p = await tcp_client_wrapper()
 
-    transport, _ = await loop.create_connection(lambda: p, '127.0.0.1', 8888)
+    await p.send("1 aaa;")
+    t = await p.receive()
+    print(t)
+    await p.send("2 bbb;")
+    await p.send("3 ccc;")
+    t = await p.receive()
+    print(t)
+    t = await p.receive()
+    print(t)
 
-    p.send_msg("1 aaa;")
-    p.send_msg("2 bbb;")
-    p.send_msg("3 ccc;")
+    await p.send("4 ddd;")
+    await p.send("5 eee;")
+    await p.send("FIN;")
+    t = await p.receive()
+    print(t)
 
-    p.send_msg("4 ddd;")
-    p.send_msg("5 eee;")
-    p.send_msg("FIN;")
+    from time import sleep
+    sleep(3)
+    t = await p.receive()
+    print(t)
 
-    try:
-        await on_con_lost
-    finally:
-        transport.close()
+    await p.close()
 
 if __name__ == '__main__':
 

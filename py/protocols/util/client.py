@@ -28,9 +28,9 @@ class Client(object):
     async def receive(self):
         raise NotImplementedError
 
-    @abstractmethod
-    async def connect(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # async def connect(self):
+    #     raise NotImplementedError
 
     @abstractmethod
     async def close(self):
