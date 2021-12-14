@@ -13,7 +13,14 @@ class EchoClientProtocol(asyncio.Protocol):
         print('Data sent: {!r}'.format(data))
 
     def data_received(self, data):
-        print('Data received: {!r}'.format(data.decode()))
+
+        parts = data.decode().split(";")
+        while "" in parts:
+            parts.remove("")
+
+        print("parts received", parts)
+
+        # print('Data received: {!r}'.format(data.decode()))
 
     def connection_lost(self, exc):
         print('The server closed the connection')
@@ -49,8 +56,8 @@ async def main():
         lambda: p,
         '127.0.0.1', 8888)
 
-    p.send_msg("4 ddd")
-    p.send_msg("5 eee")
+    p.send_msg("4 ddd;")
+    p.send_msg("5 eee;")
 
     try:
         await on_con_lost
