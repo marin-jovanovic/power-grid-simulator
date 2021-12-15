@@ -1,5 +1,4 @@
 import asyncio
-from random import random
 
 from py.protocols.util.client import Client
 
@@ -19,8 +18,6 @@ class EchoClientProtocol(asyncio.Protocol):
         parts = data.decode().split(";")
         while "" in parts:
             parts.remove("")
-
-        print("parts received", parts)
 
         for message in parts:
             self.rec_l.append(message)
@@ -60,12 +57,18 @@ class TCPClient(Client):
         finally:
             self.transport.close()
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+
 
 async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
 
     client = TCPClient(domain_name, port)
 
-    client.transport, _ = await client.loop.create_connection(
+    client.transport, _ = await client.loop.create_connection(ma
         lambda: client.protocol,
         domain_name,
         port
@@ -76,28 +79,21 @@ async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
 
 async def main():
 
-    p = await tcp_client_wrapper()
+    async with await tcp_client_wrapper() as p:
+        await p.send("1 aaa;")
+        print("Data received:", await p.receive(), "\n")
 
-    await p.send("1 aaa;")
-    t = await p.receive()
-    print("---", t)
+        await p.send("2 bbb;")
+        await p.send("3 ccc;")
+        print("Data received:", await p.receive())
+        print("Data received:", await p.receive(), "\n")
 
-    await p.send("2 bbb;")
-    await p.send("3 ccc;")
-    t = await p.receive()
-    print("---", t)
-    t = await p.receive()
-    print("---", t)
+        await p.send("4 ddd;")
+        await p.send("5 eee;")
+        await p.send("FIN;")
+        print("Data received:", await p.receive())
+        print("Data received:", await p.receive(), "\n")
 
-    await p.send("4 ddd;")
-    await p.send("5 eee;")
-    await p.send("FIN;")
-    t = await p.receive()
-    print("---", t)
-    t = await p.receive()
-    print("---", t)
-
-    await p.close()
 
 if __name__ == '__main__':
 

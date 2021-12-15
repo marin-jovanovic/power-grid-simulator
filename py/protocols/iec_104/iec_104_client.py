@@ -7,25 +7,13 @@ import time
 from hat.aio import run_asyncio
 from hat.drivers import iec104
 
+from py.protocols.util.client import Client
+
+
+
+
+
 ADDRESSES = []
-
-
-class Address:
-
-    @staticmethod
-    def get_as_csv(asdu_address, io_address):
-        return str(asdu_address) + ";" + str(io_address)
-
-    def __init__(self, asdu_address, io_address):
-        self.asdu_address = asdu_address
-        self.io_address = io_address
-
-    def __str__(self):
-        return f"{self.asdu_address=} {self.io_address=}"
-
-    def formatted_name(self):
-        return Address.get_as_csv(self.asdu_address, self.io_address)
-
 
 async def load_addresses(connection=None):
     global ADDRESSES
@@ -41,11 +29,10 @@ async def load_addresses(connection=None):
         asdu_address = result.asdu_address
         io_address = result.io_address
 
-        ADDRESSES.append(Address(asdu_address, io_address))
+        # ADDRESSES.append(Address(asdu_address, io_address))
 
     [print(i.formatted_name()) for i in ADDRESSES]
 
-from py.protocols.util.client import Client
 
 class IEC104Client(Client):
     #     class Client(object):
@@ -77,24 +64,16 @@ class IEC104Client(Client):
 
         self.known_states = {}
 
-
-    async def send(self, payload):
-        """"""
-
-    async def receive(self):
-        """"""
-
     async def receive_single(self):
         """"""
 
     async def receive_all(self, asdu_address):
         """"""
 
-        states = await self.connection.interrogate(asdu_address)
+        return await self.connection.interrogate(asdu_address)
 
-        self.update_states(states)
-
-        return states
+        # self.update_states(states)
+        # return states
 
     async def diff(self):
         """"""
@@ -102,6 +81,28 @@ class IEC104Client(Client):
     async def connect(self):
         """"""
 
+        address = iec104.Address('127.0.0.1', 19999)
+
+        while True:
+
+            try:
+                connection = await iec104.connect(address)
+                return connection
+
+            except ConnectionRefusedError:
+                n = 3
+                for i in range(n):
+                    print("trying to reconnect in", n - i)
+                    await asyncio.sleep(1)
+                print("reconnecting\n")
+
+    async def send(self, payload):
+        """"""
+
+    async def receive(self):
+        """"""
+
+    # todo implement async enter and exit
     async def close(self):
         """"""
 
@@ -115,49 +116,31 @@ async def iec_104_init_wrapper(domain_name="127.0.0.1", port=19999):
     return client
 
 
-async def connect():
-    address = iec104.Address('127.0.0.1', 19999)
-
-    while True:
-
-        try:
-            connection = await iec104.connect(address)
-            return connection
-
-        except ConnectionRefusedError:
-            n = 3
-            for i in range(n):
-                print("trying to reconnect in", n - i)
-                await asyncio.sleep(1)
-            print("reconnecting\n")
-
+# async def connect():
+#     address = iec104.Address('127.0.0.1', 19999)
+#
+#     while True:
+#
+#         try:
+#             connection = await iec104.connect(address)
+#             return connection
+#
+#         except ConnectionRefusedError:
+#             n = 3
+#             for i in range(n):
+#                 print("trying to reconnect in", n - i)
+#                 await asyncio.sleep(1)
+#             print("reconnecting\n")
+#
 
 async def async_main():
 
     client = await iec_104_init_wrapper("127.0.0.1", 19999)
-    raw_data = await client.receive_all(asdu_address=65535)
-    # print()
-    # print()
-    # print()
-    time.sleep(3)
-    raw_data = await client.receive_all(asdu_address=65535)
-    time.sleep(3)
-    raw_data = await client.receive_all(asdu_address=65535)
-    time.sleep(3)
-    raw_data = await client.receive_all(asdu_address=65535)
 
-    return
-
-    [print(i) for i in raw_data]
-    print()
-    print()
-    print()
     raw_data = await client.receive_all(asdu_address=65535)
-    # raw_data = await connection.interrogate(asdu_address=65535)
     [print(i) for i in raw_data]
 
     return
-
 
     # address = iec104.Address('127.0.0.1', 19999)
     # while True:

@@ -22,8 +22,8 @@ class EchoServerProtocol(asyncio.Protocol):
             else:
                 payload = (message + " tmp").encode("utf-8") + str(";").encode("utf-8")
 
-            print("sending", payload)
-            self.transport.write(payload)
+                print("sending", payload)
+                self.transport.write(payload)
 
         print("done with", parts)
         print()
