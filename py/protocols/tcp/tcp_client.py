@@ -1,4 +1,5 @@
 import asyncio
+from random import random
 
 from py.protocols.util.client import Client
 
@@ -8,6 +9,7 @@ class EchoClientProtocol(asyncio.Protocol):
     def __init__(self,  on_con_lost):
         self.on_con_lost = on_con_lost
         self.rec_l = []
+        self.rec_q = asyncio.Queue()
 
     def connection_made(self, transport):
         self.transport = transport
@@ -22,6 +24,7 @@ class EchoClientProtocol(asyncio.Protocol):
 
         for message in parts:
             self.rec_l.append(message)
+            self.rec_q.put_nowait(message)
 
     def connection_lost(self, exc):
         print('The server closed the connection')
@@ -43,10 +46,15 @@ class TCPClient(Client):
         print('Data sent: {!r}'.format(payload))
 
     async def receive(self):
-        return self.protocol.rec_l
-        # raise NotImplementedError
+        ret = await self.protocol.rec_q.get()
+        # no processing
+        self.protocol.rec_q.task_done()
+        return ret
 
     async def close(self):
+
+        await self.protocol.rec_q.join()
+
         try:
             await self.on_con_lost
         finally:
@@ -72,24 +80,22 @@ async def main():
 
     await p.send("1 aaa;")
     t = await p.receive()
-    print(t)
+    print("---", t)
+
     await p.send("2 bbb;")
     await p.send("3 ccc;")
     t = await p.receive()
-    print(t)
+    print("---", t)
     t = await p.receive()
-    print(t)
+    print("---", t)
 
     await p.send("4 ddd;")
     await p.send("5 eee;")
     await p.send("FIN;")
     t = await p.receive()
-    print(t)
-
-    from time import sleep
-    sleep(3)
+    print("---", t)
     t = await p.receive()
-    print(t)
+    print("---", t)
 
     await p.close()
 
