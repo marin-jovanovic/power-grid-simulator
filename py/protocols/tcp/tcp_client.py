@@ -1,7 +1,7 @@
 import asyncio
 
 from py.protocols.util.client import Client
-
+from py.protocols.util.message import Message
 
 class EchoClientProtocol(asyncio.Protocol):
 
@@ -39,12 +39,17 @@ class TCPClient(Client):
         self.protocol = EchoClientProtocol(self.on_con_lost)
 
     async def send(self, payload):
-        self.transport.write(payload.encode())
-        print('Data sent: {!r}'.format(payload))
+        self.transport.write(payload.byte_representation())
+        print("Data sent:", payload.byte_representation())
+        # self.transport.write(payload.encode())
+        # print('Data sent: {!r}'.format(payload))
 
     async def receive(self):
         ret = await self.protocol.rec_q.get()
         # no processing
+        print(type(ret))
+        r = Message.decode(ret)
+
         self.protocol.rec_q.task_done()
         return ret
 
@@ -68,7 +73,7 @@ async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
 
     client = TCPClient(domain_name, port)
 
-    client.transport, _ = await client.loop.create_connection(ma
+    client.transport, _ = await client.loop.create_connection(
         lambda: client.protocol,
         domain_name,
         port
@@ -80,17 +85,21 @@ async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
 async def main():
 
     async with await tcp_client_wrapper() as p:
-        await p.send("1 aaa;")
+
+        await p.send(Message("1 aaa"))
         print("Data received:", await p.receive(), "\n")
 
-        await p.send("2 bbb;")
-        await p.send("3 ccc;")
+        await p.send(Message({"a":1, "b":2}, "1 aaa"))
+        print("Data received:", await p.receive(), "\n")
+
+        await p.send(Message("2 bbb"))
+        await p.send(Message("3 ccc"))
         print("Data received:", await p.receive())
         print("Data received:", await p.receive(), "\n")
 
-        await p.send("4 ddd;")
-        await p.send("5 eee;")
-        await p.send("FIN;")
+        await p.send(Message("4 ddd"))
+        await p.send(Message("5 eee"))
+        await p.send(Message("FIN"))
         print("Data received:", await p.receive())
         print("Data received:", await p.receive(), "\n")
 

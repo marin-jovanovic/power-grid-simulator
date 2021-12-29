@@ -14,7 +14,10 @@ class Message:
             raise NotImplementedError
 
     def byte_representation(self):
-        return (str(self.header) + str(self.payload)).encode("utf-8")
+        if hasattr(self, "message_str_representation"):
+            return (str(self.message_str_representation) + ";").encode("utf-8")
+        else:
+            return (str(self.header) + str(self.payload) + ";").encode("utf-8")
 
     def __str__(self):
         if hasattr(self, "message_str_representation"):
@@ -28,7 +31,14 @@ class Message:
             raise Exception
 
     def decode(self, payload):
-        raise NotImplementedError
+        # raise NotImplementedError
+        if payload.contains("{") and payload.contains("}"):
+            print("header present and decodable")
+
+            t = payload.split("}")
+
+        else:
+            print("no header present")
 
 
 def main():
