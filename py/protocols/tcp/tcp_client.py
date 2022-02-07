@@ -14,7 +14,6 @@ class EchoClientProtocol(asyncio.Protocol):
         self.transport = transport
 
     def data_received(self, data):
-
         parts = data.decode().split(";")
         while "" in parts:
             parts.remove("")
@@ -22,6 +21,9 @@ class EchoClientProtocol(asyncio.Protocol):
         for message in parts:
             self.rec_l.append(message)
             self.rec_q.put_nowait(message)
+
+            # print("rec l", self.rec_l)
+            # print("rec q", self.rec_q)
 
     def connection_lost(self, exc):
         print('The server closed the connection')
@@ -47,10 +49,12 @@ class TCPClient(Client):
     async def receive(self):
         ret = await self.protocol.rec_q.get()
         # no processing
-        print(type(ret))
+
         r = Message.decode(ret)
 
         self.protocol.rec_q.task_done()
+
+        print("received", r)
         return ret
 
     async def close(self):
@@ -82,7 +86,7 @@ async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
     return client
 
 
-async def main():
+async def async_main():
 
     async with await tcp_client_wrapper() as p:
 
@@ -104,6 +108,9 @@ async def main():
         print("Data received:", await p.receive(), "\n")
 
 
-if __name__ == '__main__':
+def main():
+    asyncio.run(async_main())
 
-    asyncio.run(main())
+
+if __name__ == '__main__':
+    main()

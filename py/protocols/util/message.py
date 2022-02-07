@@ -5,6 +5,10 @@ class Message:
             self.message_str_representation = args[0]
 
             # todo call decode method
+            #   and decode in header and payload
+
+            # self.header = args[0]
+            # self.payload = args[1]
 
         elif len(args) == 2:
             self.header = args[0]
@@ -14,10 +18,18 @@ class Message:
             raise NotImplementedError
 
     def byte_representation(self):
-        if hasattr(self, "message_str_representation"):
-            return (str(self.message_str_representation) + ";").encode("utf-8")
-        else:
-            return (str(self.header) + str(self.payload) + ";").encode("utf-8")
+
+        # todo config to only header and payload type
+
+        return (str(self.message_str_representation)
+                    if hasattr(self, "message_str_representation") else
+                str(self.header) + str(self.payload)
+                     + ";").encode("utf-8")
+
+        # if hasattr(self, "message_str_representation"):
+        #     return (str(self.message_str_representation) + ";").encode("utf-8")
+        # else:
+        #     return (str(self.header) + str(self.payload) + ";").encode("utf-8")
 
     def __str__(self):
         if hasattr(self, "message_str_representation"):
@@ -30,9 +42,15 @@ class Message:
         else:
             raise Exception
 
-    def decode(self, payload):
+    @staticmethod
+    def decode(payload):
         # raise NotImplementedError
-        if payload.contains("{") and payload.contains("}"):
+
+        print("decoding", payload)
+
+        payload = str(payload)
+
+        if payload.__contains__("{") and payload.__contains__("}"):
             print("header present and decodable")
 
             t = payload.split("}")
@@ -40,6 +58,7 @@ class Message:
         else:
             print("no header present")
 
+        return payload
 
 def main():
     message = Message(
@@ -48,6 +67,12 @@ def main():
     )
 
     print(message)
+
+    content = "{tmp}abc"
+
+    if content.__contains__("{"):
+        # header present
+        pass
 
 
 if __name__ == '__main__':

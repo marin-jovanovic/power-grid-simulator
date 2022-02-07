@@ -1,13 +1,17 @@
 import asyncio
+from py.protocols.util.message import Message
 
 
 class EchoServerProtocol(asyncio.Protocol):
+
+
     def connection_made(self, transport):
         peer_name = transport.get_extra_info('peername')
         print('Connection from {}'.format(peer_name))
         self.transport = transport
 
     def data_received(self, data):
+        print(f"{self.transport=}")
 
         parts = data.decode().split(";")
         while "" in parts:
@@ -21,6 +25,7 @@ class EchoServerProtocol(asyncio.Protocol):
 
             else:
                 payload = (message + " tmp").encode("utf-8") + str(";").encode("utf-8")
+                # payload = (message + " tmp" + ";").byte_representation()
 
                 print("sending", payload)
                 self.transport.write(payload)
@@ -29,7 +34,7 @@ class EchoServerProtocol(asyncio.Protocol):
         print()
 
 
-async def main():
+async def async_main():
     loop = asyncio.get_running_loop()
 
     server = await loop.create_server(
@@ -40,4 +45,10 @@ async def main():
         await server.serve_forever()
 
 
-asyncio.run(main())
+def main():
+    asyncio.run(async_main())
+
+
+if __name__ == '__main__':
+    main()
+
