@@ -1,79 +1,184 @@
+from ast import literal_eval
+
+
 class Message:
+    """
+    used for communication between server and client
+    when server or client is sending message it is sending this object
+
+    assumption is that we can only send strings with used protocol
+
+    server sending
+        message = Message(
+            {"param 1": "val 1", "param 2": "val 2"},
+            "payload content"
+        )
+
+        server.send(
+            message.encode()
+        )
+
+    server receiving
+        message = server.receive().decode()
+
+    """
 
     def __init__(self, *args):
         if len(args) == 1:
-            self.message_str_representation = args[0]
 
-            # todo call decode method
-            #   and decode in header and payload
-
-            # self.header = args[0]
-            # self.payload = args[1]
+            self.header, self.payload = Message.decode(args[0])
 
         elif len(args) == 2:
             self.header = args[0]
-            self.payload = args[1]
+            self.payload = literal_eval(args[1])
 
         else:
             raise NotImplementedError
 
     def byte_representation(self):
-
-        # todo config to only header and payload type
-
-        return (str(self.message_str_representation)
-                    if hasattr(self, "message_str_representation") else
-                str(self.header) + str(self.payload)
-                     + ";").encode("utf-8")
-
-        # if hasattr(self, "message_str_representation"):
-        #     return (str(self.message_str_representation) + ";").encode("utf-8")
-        # else:
-        #     return (str(self.header) + str(self.payload) + ";").encode("utf-8")
+        return (str(self.header) + str(self.payload) + ";").encode("utf-8")
 
     def __str__(self):
-        if hasattr(self, "message_str_representation"):
-            return str(["message_str_representation:",
-                        self.message_str_representation])
-
-        elif hasattr(self, "header") and hasattr(self, "payload"):
-            return str(["header:", self.header, "payload", self.payload])
-
-        else:
-            raise Exception
+        return str(["header:", self.header, "payload", self.payload])
 
     @staticmethod
-    def decode(payload):
-        # raise NotImplementedError
+    def decode(message):
 
-        print("decoding", payload)
+        # we assume this was used prior to calling this json.dumps
+        # but we are checking for edge cases
 
-        payload = str(payload)
+        print(f"to decode {message=}")
 
-        if payload.__contains__("{") and payload.__contains__("}"):
-            print("header present and decodable")
+        if not isinstance(message, str):
+            print("input is not string")
 
-            t = payload.split("}")
+            if not message:
+                return {}, ""
 
-        else:
-            print("no header present")
+            message = str(message)
 
-        return payload
+
+        # if message.__contains__("{"):
+            # try format as json
+            # header present
+
+        try:
+            message_as_json = json.loads(message)
+
+            print(f"{message_as_json=}")
+
+            header = message_as_json["header"]
+            payload = message_as_json["payload"]
+
+        except json.decoder.JSONDecodeError:
+            header = {}
+            payload = message
+
+            print("not json")
+
+        # else:
+        #     header = {}
+        #     payload = message
+
+        # if message.__contains__("{"):
+        #     # header present
+        #
+        #     indices = [i for i, c in enumerate(content) if c == "}"]
+        #     last_index = indices[-1]
+        #
+        #     header = message[:last_index + 1]
+        #
+        #     header = literal_eval(header)
+        #     payload = message[last_index + 1:]
+        #
+        # else:
+        #     header = {}
+        #     payload = message
+
+        return header, payload
+
+    @staticmethod
+    def encode(message):
+        return json.dumps(message)
+
+import json
 
 def main():
-    message = Message(
-        {"control": "256adf", "len": 3},
-        "tmp msg"
-    )
+    # message = Message(
+    #     {
+    #         "header":        {"control": "256adf", "len": 3},
+    #         "payload":        "tmp msg"
+    #     }
+    # )
 
-    print(message)
+    # print(message)
 
-    content = "{tmp}abc"
+    # header = {"a": "b", "c": "{}", "d": "{}", "e": "{}"}
+    #
+    # c = {
+    #         "header":        {"control": "256adf", "len": 3},
+    #         "payload":        "tmp msg"
+    #     }
+    # print(c)
+    # print(type(c))
 
-    if content.__contains__("{"):
-        # header present
-        pass
+    # content =        json.dumps({
+    #         "header":        {"control": "256adf", "len": 3},
+    #         "payload":        "tmp msg"
+    #     })
+    #
+    #
+    #
+    # print(f"{content=}")
+    #
+    # if content.__contains__("{"):
+    #     # try format as json
+    #     # header present
+    #
+    #     message_as_json = json.loads(content)
+    #
+    #     print(f"{message_as_json=}")
+    #
+    #     header = message_as_json["header"]
+    #     payload = message_as_json["payload"]
+    #
+    # else:
+    #     header = {}
+    #     payload = content
+    #
+    # print(f"{header=}")
+    # print(f"{payload=}")
 
+    for header, payload in [
+        (None, None),
+        (None, "a"),
+        ("a", None),
+        ({"a": "b"}, None),
+        (None, {"a": "b"}),
+        ({"a": "b"}, {"c": "d"}),
+        ({"a": "b", "c": {"d": "e"}}, None),
+        ({"a": "b", "c": {"d": "e"}}, {"f": "g", "h": {"i": "j"}}),
+    ]:
+        print(f"{header=}")
+        print(f"{payload=}")
+
+        if not header:
+            message = Message(payload)
+
+        elif not payload:
+            message = Message(header)
+
+        else:
+            message = Message(header, payload)
+
+        print(message)
+
+        assert isinstance(message.header, dict)
+        assert isinstance(message.payload, str)
+
+        # print("header type", type(message.header))
+        # print("payload type", type(message.payload))
+        print()
 
 if __name__ == '__main__':
     main()

@@ -4,7 +4,6 @@ from py.protocols.util.message import Message
 
 class EchoServerProtocol(asyncio.Protocol):
 
-
     def connection_made(self, transport):
         peer_name = transport.get_extra_info('peername')
         print('Connection from {}'.format(peer_name))
