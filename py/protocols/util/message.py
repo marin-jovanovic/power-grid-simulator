@@ -8,29 +8,81 @@ class Message:
 
     assumption is that we can only send strings with used protocol
 
-    server sending
-        message = Message(
-            {"param 1": "val 1", "param 2": "val 2"},
-            "payload content"
-        )
+    header is stored as dictionary
+    payload is stored as any
 
-        server.send(
-            message.encode()
-        )
+    recommended use
 
-    server receiving
-        message = server.receive().decode()
+            message = Message(
+                {"param 1": "val 1", "param 2": "val 2"},
+                "payload content"
+            )
+
+        server sending
+
+            server.send(
+                message.encode()
+            )
+
+        server receiving
+            message = server.receive().decode()
+
+    supported use
+
+            message = Message(arg[0], arg[1])
+            arg[0] = None, any
+            arg[1] = None, any, left out
+
 
     """
 
     def __init__(self, *args):
         if len(args) == 1:
-
             self.header, self.payload = Message.decode(args[0])
 
         elif len(args) == 2:
-            self.header = args[0]
-            self.payload = literal_eval(args[1])
+
+            h, p = args[0], args[1]
+
+            if not p:
+
+                p = h if h else p
+
+                h = {}
+
+            if h:
+
+                try:
+                    self.header = literal_eval(h)
+
+                    # todo check cast to json
+
+                except ValueError:
+                    print("error parsing header")
+                    self.header = h
+
+            else:
+                self.header = {}
+            payload_buffer = None
+            if not isinstance(self.header, dict):
+                # self.payload = self.header
+                payload_buffer = self.header
+                self.header = {}
+
+            if p:
+
+                try:
+                    # todo see if json casting is better suited
+                    self.payload = literal_eval(p)
+                except ValueError:
+                    print("error parsing payload")
+                    self.payload = p
+
+            else:
+                self.payload = None
+
+            if payload_buffer:
+                self.payload = str(payload_buffer) + str(self.payload)
 
         else:
             raise NotImplementedError
@@ -42,10 +94,13 @@ class Message:
         return str(["header:", self.header, "payload", self.payload])
 
     @staticmethod
-    def decode(message):
+    def decode(message: str):
+        """
+        decodes message and tries to evaluate its content
 
-        # we assume this was used prior to calling this json.dumps
-        # but we are checking for edge cases
+        :param message: input as string
+        :return: decoded message as (header, payload)
+        """
 
         print(f"to decode {message=}")
 
@@ -53,14 +108,9 @@ class Message:
             print("input is not string")
 
             if not message:
-                return {}, ""
+                return {}, None
 
             message = str(message)
-
-
-        # if message.__contains__("{"):
-            # try format as json
-            # header present
 
         try:
             message_as_json = json.loads(message)
@@ -149,32 +199,121 @@ def main():
     # print(f"{header=}")
     # print(f"{payload=}")
 
-    for header, payload in [
-        (None, None),
-        (None, "a"),
-        ("a", None),
-        ({"a": "b"}, None),
-        (None, {"a": "b"}),
-        ({"a": "b"}, {"c": "d"}),
-        ({"a": "b", "c": {"d": "e"}}, None),
-        ({"a": "b", "c": {"d": "e"}}, {"f": "g", "h": {"i": "j"}}),
+    try:
+        Message()
+        assert False
+    except NotImplementedError:
+        pass
+
+    import pathlib
+    curr_path = pathlib.Path(__file__).parent.resolve()
+
+    with open(curr_path / "message.py", "r") as f:
+        lines = f.readlines()
+
+    from inspect import currentframe
+
+    def get_line_number():
+        cf = currentframe()
+        # print(cf.f_back.f_lineno)
+        return cf.f_back.f_lineno
+
+    # print("test", lines[get_line_number()])
+    # message = Message(None)
+    # assert message.header == {}
+    # assert message.payload is None
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message(None, None)
+    # assert message.header == {}
+    # assert message.payload is None
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message(None, "a")
+    # assert message.header == {}
+    # assert message.payload == "a"
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message("a", None)
+    # assert message.header == {}
+    # assert message.payload == "a"
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message({"a": "b"}, None)
+    # assert message.header == {}
+    # assert message.payload == {"a": "b"}
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message(None, {"a": "b"})
+    # assert message.header == {}
+    # assert message.payload == {"a": "b"}
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message({"a": "b"}, {"c": "d"})
+    # assert message.header == {"a": "b"}
+    # assert message.payload == {"c": "d"}
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message({"a": "b", "c": {"d": "e"}}, None)
+    # assert message.header == {}
+    # assert message.payload == {"a": "b", "c": {"d": "e"}}
+    #
+    # print("test", lines[get_line_number()])
+    # message = Message({"a": "b", "c": {"d": "e"}}, {"f": "g", "h": {"i": "j"}})
+    # assert message.header == {"a": "b", "c": {"d": "e"}}
+    # assert message.payload == {"f": "g", "h": {"i": "j"}}
+    #
+    #
+    # return
+
+    # message_as_json = json.loads(str('{"a": {"b": {"d": ["e", "f"]}}}'))
+    # print(message_as_json)
+    # print(message_as_json["a"])
+    # print(message_as_json["a"]["b"])
+    # print(message_as_json["a"]["b"]["d"])
+    #
+    # message_as_json = json.loads("['a', 'b']")
+    # print(message_as_json)
+    # return
+
+    for header, payload, expected_header, expected_payload in [
+        (None, None, {}, None),
+        (None, "a", {}, "a"),
+        ("a", None, {}, "a"),
+        ({"a": "b"}, None, {}, {"a": "b"}),
+        (None, {"a": "b"}, {}, {"a": "b"}),
+        ({"a": "b"}, {"c": "d"}, {"a": "b"}, {"c": "d"}),
+        ({"a": "b", "c": {"d": "e"}}, None, {}, {"a": "b", "c": {"d": "e"}}),
+        ({"a": "b", "c": {"d": "e"}}, {"f": "g", "h": {"i": "j"}}, {"a": "b", "c": {"d": "e"}}, {"f": "g", "h": {"i": "j"}}),
+
+        (None, ["a", "b"], {}, ["a", "b"]),
+        (["a", "b"], None, {}, ["a", "b"]),
+
+        ("c", ["a", "b"], {}, "c" + str(["a", "b"])),
+        (["d", "e"], ["a", "b"], {}, str(["d", "e"]) + str(["a", "b"])),
+        ({"c"}, ["a", "b"], {}, str({"c"}) + str(["a", "b"])),
+        ({"c"}, None, {}, {"c"}),
+        ({"c"}, "ab", {}, str({"c"}) + "ab"),
+
     ]:
-        print(f"{header=}")
-        print(f"{payload=}")
 
-        if not header:
-            message = Message(payload)
+        # print("test", lines[get_line_number()])
+        # print("test", lines[get_line_number()])
+        # print(f"{header=}")
+        # print(f"{payload=}")
 
-        elif not payload:
-            message = Message(header)
+        print(f"test {header=} {payload=}")
 
-        else:
-            message = Message(header, payload)
+        # todo test with one arg
+        message = Message(header, payload)
+        print(f"{message.header=}")
+        print(f"{message.payload=}")
 
-        print(message)
+        assert message.header == expected_header
+        assert message.payload == expected_payload
 
-        assert isinstance(message.header, dict)
-        assert isinstance(message.payload, str)
+        # assert isinstance(message.header, dict)
+        # assert isinstance(message.payload, str)
 
         # print("header type", type(message.header))
         # print("payload type", type(message.payload))
