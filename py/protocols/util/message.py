@@ -205,19 +205,19 @@ def main():
     except NotImplementedError:
         pass
 
-    import pathlib
-    curr_path = pathlib.Path(__file__).parent.resolve()
-
-    with open(curr_path / "message.py", "r") as f:
-        lines = f.readlines()
-
-    from inspect import currentframe
-
-    def get_line_number():
-        cf = currentframe()
-        # print(cf.f_back.f_lineno)
-        return cf.f_back.f_lineno
-
+    # import pathlib
+    # curr_path = pathlib.Path(__file__).parent.resolve()
+    #
+    # with open(curr_path / "message.py", "r") as f:
+    #     lines = f.readlines()
+    #
+    # from inspect import currentframe
+    #
+    # def get_line_number():
+    #     cf = currentframe()
+    #     # print(cf.f_back.f_lineno)
+    #     return cf.f_back.f_lineno
+    #
     # print("test", lines[get_line_number()])
     # message = Message(None)
     # assert message.header == {}
@@ -276,6 +276,29 @@ def main():
     # print(message_as_json)
     # return
 
+    for m, expected_header, expected_payload in [
+        (None, {}, None),
+        ("a", {}, "a"),
+        ({"a": "b"}, {}, {"a": "b"}),
+        ({"a": "b", "c": {"d": "e"}}, {}, {"a": "b", "c": {"d": "e"}}),
+        (["a", "b"], {}, ["a", "b"]),
+        ({"c", "ab"}, {}, {"c", "ab"}),
+
+    ]:
+
+        print(f"test {m=}}")
+
+        # todo test with one arg
+        message = Message(m)
+        print(f"{message.header=}")
+        print(f"{message.payload=}")
+
+        assert message.header == expected_header
+        assert message.payload == expected_payload
+
+        print()
+
+
     for header, payload, expected_header, expected_payload in [
         (None, None, {}, None),
         (None, "a", {}, "a"),
@@ -294,13 +317,7 @@ def main():
         ({"c"}, ["a", "b"], {}, str({"c"}) + str(["a", "b"])),
         ({"c"}, None, {}, {"c"}),
         ({"c"}, "ab", {}, str({"c"}) + "ab"),
-
     ]:
-
-        # print("test", lines[get_line_number()])
-        # print("test", lines[get_line_number()])
-        # print(f"{header=}")
-        # print(f"{payload=}")
 
         print(f"test {header=} {payload=}")
 
@@ -312,11 +329,6 @@ def main():
         assert message.header == expected_header
         assert message.payload == expected_payload
 
-        # assert isinstance(message.header, dict)
-        # assert isinstance(message.payload, str)
-
-        # print("header type", type(message.header))
-        # print("payload type", type(message.payload))
         print()
 
 if __name__ == '__main__':
