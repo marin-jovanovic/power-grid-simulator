@@ -8,14 +8,14 @@ sys.path.insert(0, os.getcwd() + '/../adapter')
 
 from hat.aio import run_asyncio
 import signal
-from py.adapter import Adapter
+from adapter import Adapter
 
 # from protocols.server import Server
 # from protocols.ws_server import WSServer
 # from protocols.client import Client
 # import websockets
 
-from py.protocols.util.yaml_parser import get_config
+from protocols.util.yaml_parser import get_config
 
 """
 utils for address translations

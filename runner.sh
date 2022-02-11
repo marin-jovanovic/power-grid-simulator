@@ -13,4 +13,5 @@ echo "script full path $script_full_path"
 echo "current path $current_path"
 
 export PYTHONPATH="$current_path/py"
-$current_path/venv/bin/python "$current_path/py/protocols/iec_104/iec_104_client.py" > "$current_path/bash_out.txt"
+$current_path/venv/bin/python "$current_path/py/protocols/tcp/tcp_client.py"
+# > "$current_path/bash_out.txt"

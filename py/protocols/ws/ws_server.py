@@ -8,8 +8,8 @@ import nest_asyncio
 import websockets
 from hat.aio import run_asyncio
 
-from py.protocols.util.server import Server
-from py.protocols.util.message import Message
+from protocols.util.server import Server
+from protocols.util.message import Message
 
 
 class WSServer(Server):

@@ -7,9 +7,9 @@ from hat.drivers import iec104
 
 sys.path.insert(0, os.getcwd() + '/../')
 sys.path.insert(0, os.getcwd() + '/../protocols')
-from py.protocols.tcp import TCPClient
-from py.protocols.ws.ws_client import WSClient
-from py.protocols.tcp import MessageType
+from protocols.tcp import TCPClient
+from protocols.ws.ws_client import WSClient
+from protocols.tcp import MessageType
 
 
 class Strategy(ABC):

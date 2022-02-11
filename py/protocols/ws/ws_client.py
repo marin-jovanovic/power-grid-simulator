@@ -3,10 +3,10 @@ from abc import ABC
 from hat.aio import run_asyncio
 from websocket import create_connection
 
-from py.protocols.util.client import Client
+from protocols.util.client import Client
 from time import sleep
 
-from py.protocols.util.message import Message
+from protocols.util.message import Message
 
 
 class WSClient(Client, ABC):

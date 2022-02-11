@@ -4,7 +4,7 @@ from hat.drivers import iec104
 import urllib.parse
 import logging
 
-from py.simulator import common
+from simulator import common
 
 mlog = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ import urllib.parse
 import logging
 import struct
 
-from py.simulator import common
+from simulator import common
 
 mlog = logging.getLogger()
 

@@ -6,7 +6,7 @@ import logging
 import pandapower.networks
 import random
 
-from py.simulator import common
+from simulator import common
 
 mlog = logging.getLogger(__name__)
 

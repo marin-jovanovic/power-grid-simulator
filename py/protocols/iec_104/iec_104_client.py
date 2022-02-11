@@ -7,7 +7,7 @@ import time
 from hat.aio import run_asyncio
 from hat.drivers import iec104
 
-from py.protocols.util.client import Client
+from protocols.util.client import Client
 
 
 

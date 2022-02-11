@@ -6,7 +6,7 @@ sys.path.insert(0, os.getcwd() + '/../protocols')
 
 from hat.aio import run_asyncio
 
-from py.protocols.ws.ws_client import WSClient
+from protocols.ws.ws_client import WSClient
 
 async def async_main():
     client = WSClient()

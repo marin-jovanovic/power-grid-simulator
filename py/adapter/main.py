@@ -6,7 +6,7 @@ from hat.aio import run_asyncio
 
 sys.path.insert(0, os.getcwd() + '/../protocols')
 
-from py.protocols.ws.ws_server import init_server
+from protocols.ws.ws_server import init_server
 
 class Adapter:
 
