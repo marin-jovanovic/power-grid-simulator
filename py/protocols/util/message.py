@@ -1,15 +1,19 @@
 from ast import literal_eval
 
-
+# todo check if literal eval is safe
 class Message:
     """
     used for communication between server and client
+
     when server or client is sending message it is sending this object
 
     assumption is that we can only send strings with used protocol
 
     header is stored as dictionary
+
     payload is stored as any
+
+    ----------------------------------------------------------------------------
 
     recommended use
 
@@ -38,7 +42,16 @@ class Message:
 
     def __init__(self, *args):
         if len(args) == 1:
-            self.header, self.payload = Message.decode(args[0])
+
+            message = args[0]
+
+            if isinstance(args[0], str):
+                print("not string, performing casting")
+
+                message = str(message)
+                # args[0] = str(args[0])
+
+            self.header, self.payload = Message.decode(message)
 
         elif len(args) == 2:
 
@@ -98,11 +111,18 @@ class Message:
         """
         decodes message and tries to evaluate its content
 
+        expected
+            message = {
+                "header": any,
+                "payload": any
+            }
+
+
         :param message: input as string
         :return: decoded message as (header, payload)
         """
 
-        print(f"to decode {message=}")
+        print(f"to decode {message=} {type(message)=}")
 
         if not isinstance(message, str):
             print("input is not string")
@@ -121,10 +141,17 @@ class Message:
             payload = message_as_json["payload"]
 
         except json.decoder.JSONDecodeError:
-            header = {}
-            payload = message
-
             print("not json")
+
+            header = {}
+
+            try:
+                payload = literal_eval(message)
+            except ValueError:
+                print(f"val err for {message=}")
+                header = {}
+                payload = message
+
 
         # else:
         #     header = {}
@@ -286,7 +313,7 @@ def main():
 
     ]:
 
-        print(f"test {m=}}")
+        print(f"test {m=}, {expected_header=} {expected_payload=}")
 
         # todo test with one arg
         message = Message(m)
