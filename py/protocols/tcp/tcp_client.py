@@ -22,9 +22,6 @@ class EchoClientProtocol(asyncio.Protocol):
             self.rec_l.append(message)
             self.rec_q.put_nowait(message)
 
-            # print("rec l", self.rec_l)
-            # print("rec q", self.rec_q)
-
     def connection_lost(self, exc):
         print('The server closed the connection')
         self.on_con_lost.set_result(True)
@@ -41,10 +38,9 @@ class TCPClient(Client):
         self.protocol = EchoClientProtocol(self.on_con_lost)
 
     async def send(self, payload):
+        # print("sending", payload.byte_representation())
+
         self.transport.write(payload.byte_representation())
-        print("Data sent:", payload.byte_representation())
-        # self.transport.write(payload.encode())
-        # print('Data sent: {!r}'.format(payload))
 
     async def receive(self):
         ret = await self.protocol.rec_q.get()
@@ -54,7 +50,7 @@ class TCPClient(Client):
 
         self.protocol.rec_q.task_done()
 
-        print("received", r)
+        # print("received", r)
         return ret
 
     async def close(self):
@@ -89,21 +85,37 @@ async def tcp_client_wrapper(domain_name="127.0.0.1", port=8888):
 async def async_main():
 
     async with await tcp_client_wrapper() as p:
-
-        await p.send(Message("1 aaa"))
+        await p.send(t:= Message("1 aaa"))
+        print("sending", t)
+        # received = await p.receive()
+        # print("Data received:", received, "\n")
+        # assert received == "{'header': {}, 'payload': '1 aaa tmp'}"
         print("Data received:", await p.receive(), "\n")
 
-        await p.send(Message({"a":1, "b":2}, "1 aaa"))
+        await p.send(t:= Message({"a":1, "b":2}))
+        print("sending", t)
+        # received = await p.receive()
+        # print("Data received:", received, "\n")
+        # assert received == "{'header': {}, 'payload': '{'a': 1, 'b': 2} tmp'}"
         print("Data received:", await p.receive(), "\n")
 
-        await p.send(Message("2 bbb"))
-        await p.send(Message("3 ccc"))
+        await p.send(t:= Message("2 bbb"))
+        print("sending", t)
+        await p.send(t:= Message("3 ccc"))
+        print("sending", t)
         print("Data received:", await p.receive())
         print("Data received:", await p.receive(), "\n")
 
-        await p.send(Message("4 ddd"))
-        await p.send(Message("5 eee"))
-        await p.send(Message("FIN"))
+        await p.send(t:= Message(9999 * "xxxxxxxxx"))
+        print("sending", t)
+        print("Data received:", await p.receive(), "\n")
+
+        await p.send(t:= Message("4 ddd"))
+        print("sending", t)
+        await p.send(t:= Message("5 eee"))
+        print("sending", t)
+        await p.send(t:= Message("FIN"))
+        print("sending", t)
         print("Data received:", await p.receive())
         print("Data received:", await p.receive(), "\n")
 

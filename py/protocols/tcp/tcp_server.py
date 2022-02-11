@@ -1,5 +1,5 @@
 import asyncio
-from py.protocols.util.message import Message
+from py.protocols.util.message import Message, MessageCodes
 
 
 class EchoServerProtocol(asyncio.Protocol):
@@ -10,27 +10,26 @@ class EchoServerProtocol(asyncio.Protocol):
         self.transport = transport
 
     def data_received(self, data):
-        print(f"{self.transport=}")
 
-        parts = data.decode().split(";")
-        while "" in parts:
-            parts.remove("")
-        print("parts received", parts)
+        messages = data.decode().split(";")
+        # remove non messages
+        while "" in messages:
+            messages.remove("")
+        print("parts received", messages)
 
-        for message in parts:
+        for i in messages:
+            m = Message(i)
 
-            if message == "FIN":
+            if m.payload == MessageCodes.FIN.value:
+                print("fin message code detected; closing connection")
                 self.transport.close()
 
             else:
-                payload = (message + " tmp").encode("utf-8") + str(";").encode("utf-8")
-                # payload = (message + " tmp" + ";").byte_representation()
+                payload = Message({"server_add_len": len(m.payload)}, str(m.payload) + " tmp")
 
                 print("sending", payload)
-                self.transport.write(payload)
-
-        print("done with", parts)
-        print()
+                self.transport.write(payload.byte_representation())
+            print()
 
 
 async def async_main():

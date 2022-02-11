@@ -1,5 +1,11 @@
+import enum
 from ast import literal_eval
 import json
+import re
+
+
+class MessageCodes(enum.Enum):
+    FIN = "FIN"
 
 
 # todo check if literal eval is safe
@@ -42,14 +48,16 @@ class Message:
 
     """
 
+
+
     def __init__(self, *args):
         if len(args) == 1:
 
             message = args[0]
 
-            if isinstance(args[0], str):
-
-                message = str(message)
+            # if isinstance(args[0], str):
+            #
+            #     message = str(message)
 
             self.header, self.payload = Message.decode(message)
 
@@ -86,7 +94,7 @@ class Message:
 
                 try:
                     self.payload = literal_eval(p)
-                except ValueError:
+                except (ValueError, SyntaxError):
                     self.payload = p
 
             else:
@@ -98,8 +106,13 @@ class Message:
         else:
             raise NotImplementedError
 
+
+        if not hasattr(self.header, "len"):
+            self.header["len"] = len(self.payload)
+        # print(f"Message; instantiated with {self.header=} {self.payload=}")
+
     def byte_representation(self):
-        return (str(self.header) + str(self.payload) + ";").encode("utf-8")
+        return (str({"header": self.header, "payload": self.payload}) + ";").encode("utf-8")
 
     def __str__(self):
         return str(["header:", self.header, "payload", self.payload])
@@ -130,10 +143,23 @@ class Message:
             message = str(message)
 
         try:
-            message_as_json = json.loads(message)
 
-            header = message_as_json["header"]
-            payload = message_as_json["payload"]
+            p = re.compile('(?<!\\\\)\'')
+            string_cleaned_message = p.sub('\"', message)
+            message_as_json = json.loads(string_cleaned_message)
+            # print(f"{message_as_json=} {type(message_as_json)=}")
+
+            # message_as_json = json.loads(message)
+
+            if "header" in message_as_json:
+                header = message_as_json["header"]
+
+            else:
+                header = {}
+                payload = message_as_json
+
+            if "header" in message_as_json and "payload" in message_as_json:
+                payload = message_as_json["payload"]
 
         except json.decoder.JSONDecodeError:
 
@@ -142,7 +168,7 @@ class Message:
             try:
                 payload = literal_eval(message)
 
-            except ValueError:
+            except (ValueError, SyntaxError):
                 header = {}
                 payload = message
 
@@ -162,6 +188,7 @@ def main():
         pass
 
     for m, expected_header, expected_payload in [
+        ("{'header': {}, 'payload': '1 aaa'}", {}, "1 aaa"),
         (None, {}, None),
         ("a", {}, "a"),
         ({"a": "b"}, {}, {"a": "b"}),
@@ -213,6 +240,8 @@ def main():
         assert message.payload == expected_payload
 
         print()
+
+    m = Message("1 aaa")
 
 
 if __name__ == '__main__':
