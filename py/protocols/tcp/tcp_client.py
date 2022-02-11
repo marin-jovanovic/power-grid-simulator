@@ -1,63 +1,37 @@
 import asyncio
-import datetime
 
 from protocols.util.client import Client
-from protocols.util.message import Message
-
 from protocols.util.message import Message, MessageCodes
 
-class EchoClientProtocol(asyncio.Protocol):
+
+class EchoConnection(asyncio.Protocol):
 
     def __init__(self, on_con_lost):
         self.on_con_lost = on_con_lost
-
-        # todo delete one of this because they are redundant
-        self.rec_l = []
         self.rec_q = asyncio.Queue()
-
-        self.active_connections = defaultdict(str)
+        self.raw_data_buffer = ""
 
     def connection_made(self, transport):
+        peer_name = transport.get_extra_info('peername')
+        print('Connection from {}'.format(peer_name))
         self.transport = transport
 
     def data_received(self, data):
-        peer_name = self.transport.get_extra_info('peername')
 
-        raw_data = data.decode()
+        self.raw_data_buffer += data.decode()
 
-        self.active_connections[peer_name] += raw_data
+        while self.raw_data_buffer.endswith(";"):
+            to_process, self.raw_data_buffer = self.raw_data_buffer.split(";", 1)
 
-        # if not raw_data.__contains__(";"):
-        #     print("message not completed")
+            message = Message(to_process)
 
-        raw_data = self.active_connections[peer_name]
-
-        parts = []
-
-        while raw_data.endswith(";"):
-            to_process, raw_data = raw_data.split(";", 1)
-
-
-            m = Message(to_process)
-            parts.append(m)
-            # ----------------- to process
-
-            # print("todo", "empty" if not raw_data else raw_data)
-
-        self.active_connections[peer_name] = raw_data
-
-        for message in parts:
-            self.rec_l.append(message)
             self.rec_q.put_nowait(message)
-
-
 
     def connection_lost(self, exc):
         print('The server closed the connection')
         self.on_con_lost.set_result(True)
 
 
-from collections import defaultdict
 class TCPClient(Client):
     # todo add option to connect to multiple servers
 
@@ -65,30 +39,26 @@ class TCPClient(Client):
         super(TCPClient, self).__init__(domain_name, port)
 
         self.loop = asyncio.get_running_loop()
-
         self.on_con_lost = self.loop.create_future()
-        self.protocol = EchoClientProtocol(self.on_con_lost)
-
+        self.protocol = EchoConnection(self.on_con_lost)
 
     async def send(self, payload):
-        # print("sending", payload.byte_representation())
 
         self.transport.write(payload.byte_representation())
 
     async def receive(self):
 
-
         ret = await self.protocol.rec_q.get()
-        # no processing
 
-        r = Message.decode(ret)
+        # no processing
 
         self.protocol.rec_q.task_done()
 
-        # print("received", r)
         return ret
 
     async def close(self):
+
+        # todo
 
         await self.protocol.rec_q.join()
 
@@ -96,6 +66,8 @@ class TCPClient(Client):
             await self.on_con_lost
         finally:
             self.transport.close()
+
+        # self.transport.close()
 
     async def __aenter__(self):
         return self
@@ -121,7 +93,6 @@ async def async_main():
 
         await p.send(t := Message("1 aaa"))
         print("sending", t)
-        # print("Data received:", await p.receive(), datetime.datetime.now(),  "\n")
         print("Data received:", await p.receive(),  "\n")
 
         await p.send(t := Message({"a": 1, "b": 2}))
@@ -143,11 +114,12 @@ async def async_main():
         print("sending", t)
         await p.send(t := Message("5 eee"))
         print("sending", t)
-        await p.send(t := Message("FIN"))
+        # await p.send(t := Message("FIN"))
         print("sending", t)
         print("Data received:", await p.receive())
         print("Data received:", await p.receive(),  "\n")
 
+    print("done")
 
 def main():
     asyncio.run(async_main())

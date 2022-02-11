@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 
 from protocols.util.message import Message, MessageCodes
 
@@ -9,7 +8,6 @@ class EchoConnection(asyncio.Protocol):
     def __init__(self):
         print("echo connection init")
         self.raw_data_buffer = ""
-        self.transport = None
 
     def connection_made(self, transport):
         peer_name = transport.get_extra_info('peername')
