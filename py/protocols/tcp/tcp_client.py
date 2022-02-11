@@ -10,6 +10,8 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def __init__(self, on_con_lost):
         self.on_con_lost = on_con_lost
+
+        # todo delete one of this because they are redundant
         self.rec_l = []
         self.rec_q = asyncio.Queue()
 
@@ -20,16 +22,9 @@ class EchoClientProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         peer_name = self.transport.get_extra_info('peername')
-        # print("reply from", peer_name)
-
-        # parts = data.decode().split(";")
-        # while "" in parts:
-        #     parts.remove("")
 
         raw_data = data.decode()
 
-        # print(datetime.datetime.now())
-        # print("content", raw_data)
         self.active_connections[peer_name] += raw_data
 
         # if not raw_data.__contains__(";"):
@@ -42,7 +37,6 @@ class EchoClientProtocol(asyncio.Protocol):
         while raw_data.endswith(";"):
             to_process, raw_data = raw_data.split(";", 1)
 
-            # print(f"process {to_process=}")
 
             m = Message(to_process)
             parts.append(m)
@@ -51,11 +45,6 @@ class EchoClientProtocol(asyncio.Protocol):
             # print("todo", "empty" if not raw_data else raw_data)
 
         self.active_connections[peer_name] = raw_data
-
-        # print("current state of log", datetime.datetime.now())
-
-        # for id, msg in self.active_connections.items():
-        #     print(id, msg)
 
         for message in parts:
             self.rec_l.append(message)
