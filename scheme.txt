@@ -1,0 +1,27 @@
+simulator
+    -simulate events
+    -send them using one of desired protocols
+
+    create client which can send data to adapter
+
+adapter
+    -transform one kind of protocol to another
+
+    catcher
+        catches data from simulator
+        server
+
+    comm
+        send using another protocol
+        client
+
+
+server
+    -log to db
+    -perform ml
+    -serve data to user/ output
+
+    loader
+        accept data from adapter
+
+        accept on all protocols and perform filtering
