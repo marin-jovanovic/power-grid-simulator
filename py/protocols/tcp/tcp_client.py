@@ -60,7 +60,9 @@ class TCPClient(Client):
 
         # todo
 
-        await self.protocol.rec_q.join()
+        if self.protocol.rec_q.empty():
+            await self.protocol.rec_q.join()
+
 
         try:
             await self.on_con_lost
